@@ -3,8 +3,43 @@
 //
 
 #include <jni.h>
+#include "HCKVLOG.h"
+
+using namespace std;
+
+//库加载的时候缓存
+static jclass g_cls = nullptr;
+static jfieldID g_fidId = nullptr;
+static JavaVM *g_currentJVM = nullptr;
+
+/**
+ * 动态注册会调用该函数
+ */
+extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+    //提前缓存jclass和g_fieldID
+    g_currentJVM = vm;
+    JNIEnv *env;
+    if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        return -1;
+    }
+    if (g_cls) {
+        //调用env指针下的deleteGlobalRef函数删除g_cls
+        env->DeleteGlobalRef(g_cls);
+    }
+    //获取类名
+    static const char *clsName = "org/phcbest/hckv_lib/HCKV";
+    //找到类
+    jclass instance = env->FindClass(clsName);
+    if (!instance) {
+        LOGE("寻找本地类 %s 错误", clsName);
+        return -2;
+    }
+
+    return JNI_VERSION_1_6;
+}
 
 extern "C"
+
 JNIEXPORT jstring JNICALL
 Java_org_phcbest_hckv_1lib_NativeLib_stringFromJNI(JNIEnv *env, jobject thiz) {
     return env->NewStringUTF("测试HCKV成功!!!");
