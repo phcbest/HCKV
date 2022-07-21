@@ -12,6 +12,8 @@ static jclass g_cls = nullptr;
 static jfieldID g_fidId = nullptr;
 static JavaVM *g_currentJVM = nullptr;
 
+static int registerNativeMethods(JNIEnv *env, jclass cls);
+
 /**
  * 动态注册会调用该函数
  */
@@ -34,12 +36,29 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
         LOGE("寻找本地类 %s 错误", clsName);
         return -2;
     }
+    //获取类的实例
+    g_cls = reinterpret_cast<jclass>(env->NewGlobalRef(instance));
+    if (!g_cls) {
+        LOGE("创建全局引用错误 %s", clsName);
+        return -3;
+    }
+    //动态注册函数
+    int ret = registerNativeMethods(env, g_cls);
+    if (ret != 0) {
+        LOGE("无法为类注册本机方法 %s, ret = %d", clsName, ret);
+        return -4;
+    }
+    g_fidId = env->GetFieldID(g_cls, "nativeHandle", "J");
+
+    if (!g_fidId) {
+        LOGE("定位fidID失败");
+        return -5;
+    }
 
     return JNI_VERSION_1_6;
 }
 
 extern "C"
-
 JNIEXPORT jstring JNICALL
 Java_org_phcbest_hckv_1lib_NativeLib_stringFromJNI(JNIEnv *env, jobject thiz) {
     return env->NewStringUTF("测试HCKV成功!!!");
