@@ -3,6 +3,7 @@
 //
 
 #include <jni.h>
+#include <string>
 #include "HCKVLOG.h"
 
 using namespace std;
@@ -57,6 +58,26 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
 
     return JNI_VERSION_1_6;
 }
+
+
+#define HCKV_JNI static
+
+namespace hckv {
+    static string jstring2string(JNIEnv *env, jstring jstr) {
+        if (jstr) {
+            const char *str = env->GetStringUTFChars(jstr, nullptr);
+            if (str) {
+                string result(str);
+                env->ReleaseStringUTFChars(jstr, str);
+                return result;
+            }
+        }
+        return "";
+    }
+
+
+}
+
 
 extern "C"
 JNIEXPORT jstring JNICALL
