@@ -75,6 +75,21 @@ namespace hckv {
         return "";
     }
 
+    static jstring string2jstring(JNIEnv *env, const string &str) {
+        return env->NewStringUTF(str.c_str());
+    }
+
+    HCKV_JNI void nInitialize(JNIEnv *env, jobject thiz,
+                              jstring root_dir) {
+        if (!root_dir) {
+            return;
+        }
+        const char *kstr = env->GetStringUTFChars(root_dir, nullptr);
+        if (kstr) {
+            //todo
+            return;
+        }
+    }
 
 }
 
