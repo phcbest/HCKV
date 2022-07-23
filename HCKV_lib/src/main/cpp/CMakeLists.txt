@@ -22,6 +22,7 @@ add_library( # Sets the name of the library.
 
         # Provides a relative path to your source file(s).
         HCKV.cpp
+        HCKV.h
         HCKVLOG.h
         native_bridge.cpp
         )
